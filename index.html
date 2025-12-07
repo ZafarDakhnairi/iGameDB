@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iGameDB - Gaming Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="js/rawg-api.js"></script>
+    <script src="js/auth-service.js"></script>
+    <script src="js/news-api.js"></script>
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="logo-placeholder" style="text-decoration: none;">
+            iGameDB
+        </a>
+
+        <div class="search-bar-main">
+            <form onsubmit="handleSearch(event)">
+                <input type="text" placeholder="Search..." aria-label="Search games" id="searchInput">
+            </form>
+        </div>
+
+        <nav class="nav-buttons">
+            <a href="wishlist.html" class="wishlist">Wishlist</a>
+            <span id="authButtons">
+                <a href="signin.html" class="sign-in">Sign In</a>
+            </span>
+            <span id="userButtons" style="display: none;">
+                <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b;">Logout</button>
+            </span>
+            <a href="about_us.html" class="about-link">About Us</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <section class="hero-section">
+            <div class="hero-heading-box">
+                <div class="hero-heading-text">REDEFINING YOUR GAME BROWSING EXPERIENCE</div>
+            </div> 
+        </section>
+
+        <hr style="border: 0; border-top: 1px solid #444444;">
+
+        <section class="latest-news">
+            <h2>Latest News</h2>
+            <div class="news-grid" id="newsGrid">
+                <div class="loading">Loading gaming news...</div>
+            </div>
+        </section>
+
+        <section class="trending-games">
+            <h2>Trending Games</h2>
+            <div class="game-grid" id="trendingGamesGrid">
+                <div class="loading">Loading games...</div>
+            </div>
+        </section>
+
+        <section class="fan-favorites">
+            <h2>Fan Favorites</h2>
+            <div class="game-grid" id="fanFavoritesGrid">
+                <div class="loading">Loading games...</div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="footer">
+        <div class="logo-placeholder">
+            iGameDB
+        </div>
+
+        <div class="footer-buttons">
+            <button class="about" onclick="window.location.href='about_us.html'">About Us</button><br>
+            <button class="follow">Follow Us</button>
+        </div>
+    </footer>
+
+    <script>
+        const API_KEY = '266fadd8dc914070b892d47f91163eeb'; // Replace with your RAWG API key from https://rawg.io/api
+
+        async function loadTrendingGames() {
+            const data = await fetchTrendingGames();
+            if (data && data.results) {
+                displayGames(data.results, 'trendingGamesGrid');
+            }
+        }
+
+        async function loadFanFavorites() {
+            const data = await fetchFanFavorites();
+            if (data && data.results) {
+                displayGames(data.results, 'fanFavoritesGrid');
+            }
+        }
+
+        // Fallback image setter: uses local SVG placeholders when external image fails to load
+        function setFallbackImg(img, type = 'side') {
+            try {
+                img.onerror = null;
+                const mainPath = 'images/news-placeholder-main.svg';
+                const sidePath = 'images/news-placeholder-side.svg';
+                img.src = (type === 'main') ? mainPath : sidePath;
+            } catch (e) {
+                img.src = '';
+            }
+        }
+
+        async function loadNews() {
+            const newsData = await getNewsForDisplay();
+            const newsGrid = document.getElementById('newsGrid');
+                        console.log('loadNews called, newsData:', newsData);
+            
+            if (!newsData.mainArticle && newsData.sideArticles.length === 0) {
+                newsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #999;">Unable to load news at this time</div>';
+                return;
+            }
+
+            newsGrid.innerHTML = '';
+
+            // Main article
+            if (newsData.mainArticle) {
+                const mainArticle = newsData.mainArticle;
+                const mainDiv = document.createElement('div');
+                mainDiv.className = 'main-article';
+                mainDiv.style.cursor = 'pointer';
+                mainDiv.onclick = () => window.open(mainArticle.site_detail_url, '_blank');
+
+                const imageUrl = (mainArticle.image && mainArticle.image.screen_url && mainArticle.image.screen_url.startsWith('http')) 
+                    ? mainArticle.image.screen_url 
+                    : 'https://images.unsplash.com/photo-1538481143235-5d630e8c0551?w=600&h=300&fit=crop';
+                
+                mainDiv.innerHTML = `
+                    <img src="${imageUrl}" alt="${mainArticle.title}" loading="lazy" onerror="setFallbackImg(this, 'main')" style="width:100%; height:300px; object-fit:cover; display:block;">
+                    <div class="news-caption">
+                        <strong class="news-title">${mainArticle.title}</strong>
+                        <div class="news-date">${formatNewsDate(mainArticle.publish_date)}</div>
+                    </div>
+                `;
+                newsGrid.appendChild(mainDiv);
+            }
+
+            // Side articles
+            if (newsData.sideArticles.length > 0) {
+                const sideArticlesDiv = document.createElement('div');
+                sideArticlesDiv.className = 'side-articles';
+
+                newsData.sideArticles.forEach((article, index) => {
+                    const sideArticleDiv = document.createElement('div');
+                    sideArticleDiv.className = 'side-article';
+                    sideArticleDiv.style.cursor = 'pointer';
+                    sideArticleDiv.onclick = () => window.open(article.site_detail_url, '_blank');
+                    
+                    const imgUrl = (article.image && article.image.screen_url && article.image.screen_url.startsWith('http')) 
+                        ? article.image.screen_url 
+                        : 'https://images.unsplash.com/photo-1556200853-21a968d20e15?w=300&h=300&fit=crop';
+                    
+                    sideArticleDiv.innerHTML = `
+                        <img src="${imgUrl}" alt="${article.title}" loading="lazy" onerror="setFallbackImg(this, 'side')" style="width:100%; height:100px; object-fit:cover; display:block;">
+                        <div class="news-caption small">
+                            <strong class="news-title small">${article.title}</strong>
+                            <div class="news-date small">${formatNewsDate(article.publish_date)}</div>
+                        </div>
+                    `;
+                    sideArticlesDiv.appendChild(sideArticleDiv);
+                });
+
+                newsGrid.appendChild(sideArticlesDiv);
+            }
+        }
+
+        function displayGames(games, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            games.forEach(game => {
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card';
+                gameCard.style.cursor = 'pointer';
+                gameCard.onclick = () => {
+                    window.location.href = `specific_game.html?id=${game.id}`;
+                };
+
+                const backgroundImage = game.background_image ? `url(${game.background_image})` : 'linear-gradient(135deg, #f5c518 0%, #f50000 100%)';
+                
+                gameCard.innerHTML = `
+                    <div class="game-card-image" style="background-image: ${backgroundImage}; background-size: cover; background-position: center; width: 100%; height: 100%; display: flex; align-items: flex-end; padding: 10px; box-sizing: border-box;">
+                        <div style="background-color: rgba(0,0,0,0.7); width: 100%; padding: 8px; border-radius: 5px;">
+                            <span class="logo-text" style="display: block; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${game.name}</span>
+                            <span style="display: block; text-align: center; font-size: 12px; color: #f5c518;">⭐ ${game.rating}/5</span>
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(gameCard);
+            });
+        }
+
+        function handleSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value;
+            if (query.trim()) {
+                window.location.href = `searched_for.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        async function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                await authService.logout();
+            }
+        }
+
+        async function updateAuthUI() {
+            const user = await authService.getCurrentUser();
+            if (user) {
+                document.getElementById('authButtons').style.display = 'none';
+                document.getElementById('userButtons').style.display = 'inline-block';
+            }
+        }
+
+        // Load games on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check login callback
+            authService.handleLoginCallback();
+            
+            // Update auth UI
+            updateAuthUI();
+
+            if (!API_KEY || API_KEY === 'YOUR_RAWG_API_KEY') {
+                console.warn('Please set your RAWG API key in index.html');
+                // Still try to load for demo purposes
+            }
+            loadNews();
+            loadTrendingGames();
+            loadFanFavorites();
+        });
+    </script>
+
+</body>
+</html>

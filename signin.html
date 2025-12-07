@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - iGameDB</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="js/auth-service.js"></script>
+    <style>
+        .signin-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60vh;
+            padding: 40px 20px;
+        }
+
+        .signin-box {
+            background-color: #1a1a1a;
+            border-radius: 30px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            border: 2px solid #f5c518;
+        }
+
+        .signin-box h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            color: #f5c518;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #f5c518;
+            border-radius: 10px;
+            background-color: #2a2a2a;
+            color: #ffffff;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background-color: #333333;
+            border-color: #ffff00;
+        }
+
+        .signin-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #f5c518;
+            color: #000000;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .signin-button:hover {
+            background-color: #ffff00;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            color: #cccccc;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 100%;
+            height: 1px;
+            background-color: #444444;
+        }
+
+        .divider span {
+            background-color: #1a1a1a;
+            padding: 0 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .google-signin-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ffffff;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .google-signin-button:hover {
+            background-color: #f0f0f0;
+            transform: scale(1.02);
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 20px;
+            color: #ffffff;
+        }
+
+        .signup-link a {
+            color: #f5c518;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background-color: #ff6b6b;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-message {
+            background-color: #51cf66;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .user-profile {
+            display: none;
+            text-align: center;
+        }
+
+        .user-profile img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+
+        .user-profile h2 {
+            color: #f5c518;
+            margin-bottom: 5px;
+        }
+
+        .user-profile p {
+            color: #cccccc;
+            margin-bottom: 20px;
+        }
+
+        .logout-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #ff6b6b;
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .logout-button:hover {
+            background-color: #ff5252;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="logo-placeholder" style="text-decoration: none;">
+            iGameDB
+        </a>
+
+        <div class="search-bar-main">
+            <form onsubmit="handleSearch(event)">
+                <input type="text" placeholder="Search..." aria-label="Search games" id="searchInput">
+            </form>
+        </div>
+
+        <nav class="nav-buttons">
+            <a href="wishlist.html" class="wishlist">Wishlist</a>
+            <a href="signin.html" class="sign-in">Sign In</a>
+            <a href="about_us.html" class="about-link">About Us</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <div class="signin-container">
+            <div class="signin-box">
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+
+                <div id="signinForm">
+                    <h1>SIGN IN/SIGN UP</h1>
+                    
+                    <button type="button" class="google-signin-button" onclick="loginWithGoogle()">
+                        <svg class="google-icon" viewBox="0 0 24 24">
+                            <path fill="#1f2937" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#1f2937" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#1f2937" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#1f2937" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Sign in with Google
+                    </button>
+
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+
+                    <form onsubmit="handleEmailSignIn(event)">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="signin-button">Sign In</button>
+                    </form>
+
+                    <div class="signup-link">
+                        Don't have an account? <a href="#" onclick="toggleSignUp()">Create one</a>
+                    </div>
+                </div>
+
+                <div id="userProfile" class="user-profile">
+                    <img id="profilePicture" src="" alt="Profile">
+                    <h2 id="profileName"></h2>
+                    <p id="profileEmail"></p>
+                    <button class="logout-button" onclick="handleLogout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="logo-placeholder">
+            iGameDB
+        </div>
+
+        <div class="footer-buttons">
+            <button class="about" onclick="window.location.href='about_us.html'">About Us</button><br>
+            <button class="follow">Follow Us</button>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check if returning from Google OAuth
+            const handleCallback = authService.handleLoginCallback();
+
+            // Check if already logged in
+            const user = await authService.getCurrentUser();
+            if (user) {
+                displayUserProfile(user);
+            } else if (!handleCallback) {
+                // Show error if there's one in URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const error = urlParams.get('error');
+                if (error) {
+                    showError('Authentication failed. Please try again.');
+                }
+            }
+        });
+
+        function loginWithGoogle() {
+            authService.loginWithGoogle();
+        }
+
+        async function handleEmailSignIn(event) {
+            event.preventDefault();
+            // Note: Email/password signin would need additional backend implementation
+            showError('Email sign-in coming soon. Please use Google Sign-In for now.');
+        }
+
+        async function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                await authService.logout();
+            }
+        }
+
+        function displayUserProfile(user) {
+            document.getElementById('signinForm').style.display = 'none';
+            document.getElementById('userProfile').style.display = 'block';
+
+            if (user.profilePicture) {
+                document.getElementById('profilePicture').src = user.profilePicture;
+            }
+            document.getElementById('profileName').textContent = user.fullName || user.firstName + ' ' + user.lastName;
+            document.getElementById('profileEmail').textContent = user.email;
+        }
+
+        function toggleSignUp() {
+            showError('Sign-up feature coming soon. Please sign in with Google.');
+        }
+
+        function handleSearch(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value;
+            if (query.trim()) {
+                window.location.href = `searched_for.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successEl = document.getElementById('successMessage');
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+            setTimeout(() => {
+                successEl.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

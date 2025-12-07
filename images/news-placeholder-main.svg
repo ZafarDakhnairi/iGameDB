@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <rect width="100%" height="100%" fill="#f5c518"/>
+  <g font-family="Roboto, Arial, sans-serif" fill="#000">
+    <text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" font-size="36">News Image Unavailable</text>
+    <text x="50%" y="60%" dominant-baseline="middle" text-anchor="middle" font-size="20" opacity="0.9">Visit the article to view the original image</text>
+  </g>
+</svg>

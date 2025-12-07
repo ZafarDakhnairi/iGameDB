@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+
+    <div class="header">
+        <a href="index.html" class="logo-placeholder" style="text-decoration: none;">
+            iGameDB
+        </a>
+
+        <div class="search-bar-main">
+            <form onsubmit="searchGames(event)">
+                <input type="text" placeholder="Search..." aria-label="Search games" id="searchInput">
+            </form>
+        </div>
+
+        <nav class="nav-buttons">
+            <a href="wishlist.html" class="wishlist">Wishlist</a>
+            <a href="signin.html" class="sign-in">Sign In</a>
+            <a href="about_us.html" class="about-link">About Us</a>
+        </nav>
+    </div>
+
+    <div class="container">
+        <section class="hero-section-about-us">
+            <div class="about-us-heading">OUR MISSION</div>
+
+            <div class="hero-heading-text">
+                At iGameDB, we believe that every gamer deserves the right information before hitting “buy.” Our platform serves as a centralized hub for discovering, rating, and reviewing video games across all genres and platforms — think of it as the IMDb for gaming. Whether you’re a casual player or a dedicated enthusiast, iGameDB helps you make smarter gaming decisions by offering real-time ratings, detailed descriptions, and personalized recommendations. We’re on a mission to create a lightweight, user-friendly space where gamers can explore new titles, share opinions, and find their next favorite game — all in one place.
+            </div>
+        </section>
+
+        <section class="about-us-text">
+            MEET THE DEVELOPMENT TEAM
+        </section>
+
+        <div class="dev-team-list">
+            <div class="dev-member">
+                <div class="dev-image">
+                    <img src="images/ZAS.png" alt="Zaid Ahmed Siddique">
+                </div>
+                <div class="dev-name">Zaid Ahmed Siddique</div>
+                <div class="dev-role">Development Lead</div>
+            </div>
+            <div class="dev-member">
+                <div class="dev-image">
+                    <img src="images/AAZ.png" alt="Abdul Aziz Zafar">
+                </div>
+                <div class="dev-name">Abdul Aziz Zafar</div>
+                <div class="dev-role">Design Guru</div>
+            </div>
+            <div class="dev-member">
+                <div class="dev-image">
+                    <img src="images/AYK.png" alt="Abdullah Yaseen Khan">
+                </div>
+                <div class="dev-name">Abdullah Yaseen Khan</div>
+                <div class="dev-role">API Specialist</div>
+            </div>
+        </div>
+
+
+
+
+        
+    </div>
+
+    <footer class="footer">
+        <div class="logo-placeholder">
+            iGameDB
+        </div>
+
+        <div class="footer-buttons">
+            <button class="about" onclick="window.location.href='about_us.html'">About Us</button><br>
+            <button class="follow">Follow Us</button>
+        </div>
+    </footer>
+
+    <script>
+        function searchGames(event) {
+            event.preventDefault();
+            const query = document.getElementById('searchInput').value;
+            if (query.trim()) {
+                window.location.href = `searched_for.html?q=${encodeURIComponent(query)}`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+    <!-- Simple news test file -->
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial; background: #000; color: #fff; padding: 20px; }
+        .news-grid { display: flex; gap: 20px; }
+        .main-article { flex: 2; border-radius: 10px; overflow: hidden; }
+        .main-article-image { width: 100%; height: 300px; background-size: cover; }
+        .main-article-text { background: #f5c518; padding: 15px; color: #000; }
+        .side-articles { flex: 1; display: flex; flex-direction: column; gap: 15px; }
+        .side-article { border-radius: 10px; overflow: hidden; }
+        .side-article-image { width: 100%; height: 100px; background-size: cover; }
+        .side-article-text { background: #f5c518; padding: 10px; color: #000; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="news-grid">
+        <div class="main-article">
+            <div class="main-article-image" style="background-image: url('https://images.unsplash.com/photo-1538481143235-5d630e8c0551?w=600&h=300&fit=crop');"></div>
+            <div class="main-article-text">
+                <strong>New Gaming Trends in 2025</strong>
+                <div>Today</div>
+            </div>
+        </div>
+        <div class="side-articles">
+            <div class="side-article">
+                <div class="side-article-image" style="background-image: url('https://images.unsplash.com/photo-1556200853-21a968d20e15?w=300&h=150&fit=crop');"></div>
+                <div class="side-article-text">
+                    <strong>Top Games of December</strong>
+                    <div>Yesterday</div>
+                </div>
+            </div>
+            <div class="side-article">
+                <div class="side-article-image" style="background-image: url('https://images.unsplash.com/photo-1593642532400-2682a8a6b975?w=300&h=150&fit=crop');"></div>
+                <div class="side-article-text">
+                    <strong>Esports Championship</strong>
+                    <div>2 days ago</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
