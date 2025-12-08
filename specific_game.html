@@ -46,11 +46,11 @@
 <body>
 
     <div class="header">
-        <a href="index.html" class="logo-placeholder" style="text-decoration: none;">
-            iGameDB
+        <a href="index.html">        
+            <img src="images/iGameDB.png" alt="iGameDB Logo">
         </a>
 
-        <div class="search-bar-main">
+        <div class="search-bar">
             <form onsubmit="handleSearch(event)">
                 <input type="text" placeholder="Search..." aria-label="Search games" id="searchInput">
             </form>
@@ -70,9 +70,9 @@
     </div>
 
     <footer class="footer">
-        <div class="logo-placeholder">
-            iGameDB
-        </div>
+        <a href="index.html">        
+            <img src="images/iGameDB.png" alt="iGameDB Logo">
+        </a>
 
         <div class="footer-buttons">
             <button class="about" onclick="window.location.href='about_us.html'">About Us</button><br>
@@ -81,7 +81,7 @@
     </footer>
 
     <script>
-        const API_KEY = '266fadd8dc914070b892d47f91163eeb'; // Replace with your RAWG API key
+        const API_KEY = '266fadd8dc914070b892d47f91163eeb';
 
         function getQueryParam(param) {
             const urlParams = new URLSearchParams(window.location.search);

@@ -13,11 +13,10 @@
 <body>
 
     <div class="header">
-        <a href="index.html" class="logo-placeholder" style="text-decoration: none;">
-            <img src="images/iGameDB.png" alt="iGameDB Logo" style="height: 40px; vertical-align: middle;">
+    <a href="index.html">        
+            <img src="images/iGameDB.png" alt="iGameDB Logo">
         </a>
-
-        <div class="search-bar-main">
+        <div class="search-bar">
             <form onsubmit="handleSearch(event)">
                 <input type="text" placeholder="Search..." aria-label="Search games" id="searchInput">
             </form>
@@ -31,7 +30,7 @@
             <span id="userButtons" style="display: none;">
                 <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b;">Logout</button>
             </span>
-            <a href="about_us.html" class="about-link">About Us</a>
+            <a href="about_us.html" class="about-link">About Us</a> 
         </nav>
     </div>
 
@@ -67,19 +66,19 @@
     </div>
 
     <footer class="footer">
-        <div class="logo-placeholder">
-            iGameDB
-        </div>
+        <a href="index.html">        
+            <img src="images/iGameDB.png" alt="iGameDB Logo">
+        </a>
 
         <div class="footer-buttons">
             <button class="about" onclick="window.location.href='about_us.html'">About Us</button><br>
             <button class="follow">Follow Us</button>
         </div>
+
     </footer>
 
     <script>
-        const API_KEY = '266fadd8dc914070b892d47f91163eeb'; // Replace with your RAWG API key from https://rawg.io/api
-
+        const API_KEY = '266fadd8dc914070b892d47f91163eeb';
         async function loadTrendingGames() {
             const data = await fetchTrendingGames();
             if (data && data.results) {
