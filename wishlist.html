@@ -26,6 +26,14 @@
             <a href="signin.html" class="sign-in">Sign In</a>
             <a href="about_us.html" class="about-link">About Us</a>
         </nav>
+        <div class="settings">
+            <button id="settingsToggle" class="settings-btn" aria-expanded="false" aria-controls="settingsMenu">☰</button>
+            <div id="settingsMenu" class="settings-menu" hidden>
+                <label class="setting"><span>Header fixed</span><button type="button" id="headerFixed" class="toggle-btn" aria-pressed="false"></button></label>
+                <label class="setting"><span>Light mode</span><button type="button" id="lightMode" class="toggle-btn" aria-pressed="false"></button></label>
+                <button id="resetSettings" class="reset-btn">Reset</button>
+            </div>
+        </div>
     </div>
 
     <div class="container">
