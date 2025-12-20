@@ -21,8 +21,9 @@
                 <input type="text" placeholder="Search..." aria-label="Search games" id="searchInput">
             </form>
         </div>
+        <button id="menuToggle" class="menu-toggle" aria-expanded="false" aria-controls="navMenu">☰</button>
 
-        <nav class="nav-buttons">
+        <nav id="navMenu" class="nav-buttons">
             <a href="wishlist.html" class="wishlist">Wishlist</a>
             <span id="authButtons">
                 <a href="signin.html" class="sign-in">Sign In</a>
@@ -31,6 +32,8 @@
                 <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b;">Logout</button>
             </span>
             <a href="about_us.html" class="about-link">About Us</a>
+
+
             <div class="settings">
                 <button id="settingsToggle" class="settings-btn" aria-expanded="false" aria-controls="settingsMenu">☰</button>
                 <div id="settingsMenu" class="settings-menu" hidden>
@@ -315,6 +318,29 @@
             window.addEventListener('resize', ()=>{ if(headerEl && headerEl.classList.contains('header-fixed')) document.body.style.paddingTop = headerEl.offsetHeight + 'px'; });
 
             if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load); else load();
+        })();
+
+        // Mobile menu toggle
+        (function(){
+            const menuToggle = document.getElementById('menuToggle');
+            const navMenu = document.getElementById('navMenu');
+            if(!menuToggle || !navMenu) return;
+            
+            menuToggle.addEventListener('click', (e)=>{
+                e.stopPropagation();
+                const isOpen = navMenu.classList.toggle('open');
+                menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', (e)=>{
+                if(!navMenu.contains(e.target) && e.target !== menuToggle){
+                    if(navMenu.classList.contains('open')){
+                        navMenu.classList.remove('open');
+                        menuToggle.setAttribute('aria-expanded','false');
+                    }
+                }
+            });
         })();
     </script>
 

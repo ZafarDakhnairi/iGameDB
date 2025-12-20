@@ -7,34 +7,41 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="style.css">
     <script src="js/rawg-api.js"></script>
+    <script src="js/auth-service.js"></script>
 </head>
 <body>
 
-    <div class="header">
+    <div id="header" class="header">
         <a href="index.html">        
             <img src="images/iGameDB.png" alt="iGameDB Logo">
         </a>
-
-
         <div class="search-bar">
             <form onsubmit="handleSearch(event)">
                 <input type="text" placeholder="Search..." aria-label="Search games" id="searchInput">
             </form>
         </div>
+        <button id="menuToggle" class="menu-toggle" aria-expanded="false" aria-controls="navMenu">☰</button>
 
-        <nav class="nav-buttons">
+        <nav id="navMenu" class="nav-buttons">
             <a href="wishlist.html" class="wishlist">Wishlist</a>
-            <a href="signin.html" class="sign-in">Sign In</a>
+            <span id="authButtons">
+                <a href="signin.html" class="sign-in">Sign In</a>
+            </span>
+            <span id="userButtons" style="display: none;">
+                <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b;">Logout</button>
+            </span>
             <a href="about_us.html" class="about-link">About Us</a>
-        </nav>
-        <div class="settings">
-            <button id="settingsToggle" class="settings-btn" aria-expanded="false" aria-controls="settingsMenu">☰</button>
-            <div id="settingsMenu" class="settings-menu" hidden>
-                <label class="setting"><span>Header fixed</span><button type="button" id="headerFixed" class="toggle-btn" aria-pressed="false"></button></label>
-                <label class="setting"><span>Light mode</span><button type="button" id="lightMode" class="toggle-btn" aria-pressed="false"></button></label>
-                <button id="resetSettings" class="reset-btn">Reset</button>
+
+
+            <div class="settings">
+                <button id="settingsToggle" class="settings-btn" aria-expanded="false" aria-controls="settingsMenu">☰</button>
+                <div id="settingsMenu" class="settings-menu" hidden>
+                    <label class="setting"><span>Header fixed</span><button type="button" id="headerFixed" class="toggle-btn" aria-pressed="false"></button></label>
+                    <label class="setting"><span>Light mode</span><button type="button" id="lightMode" class="toggle-btn" aria-pressed="false"></button></label>
+                    <button id="resetSettings" class="reset-btn">Reset</button>
+                </div>
             </div>
-        </div>
+        </nav>
     </div>
 
     <div class="container">
@@ -112,13 +119,57 @@
 
         function handleSearch(event) {
             event.preventDefault();
-            const query = document.getElementById('searchInput').value;
-            if (query.trim()) {
-                window.location.href = `searched_for.html?q=${encodeURIComponent(query)}`;
-            }
+            const input = document.getElementById('searchInput');
+            if (!input) return;
+            const q = input.value.trim();
+            if (q) window.location.href = `searched_for.html?q=${encodeURIComponent(q)}`;
         }
 
-        document.addEventListener('DOMContentLoaded', loadSearchResults);
+        // Initialize page: auth callback and load search results
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (window.authService && authService.handleLoginCallback) authService.handleLoginCallback();
+            if (window.updateAuthUI) updateAuthUI();
+            await loadSearchResults();
+        });
     </script>
+
+    <script>
+    if(!window._igdb_header_init){
+        window._igdb_header_init = true;
+        if(!window.handleLogout) window.handleLogout = async function(){ if(confirm('Are you sure you want to logout?')){ if(window.authService && authService.logout) await authService.logout(); } };
+        if(!window.updateAuthUI) window.updateAuthUI = async function(){ if(!window.authService) return; try{ const user = await authService.getCurrentUser(); if(user){ const ab=document.getElementById('authButtons'); const ub=document.getElementById('userButtons'); if(ab) ab.style.display='none'; if(ub) ub.style.display='inline-block'; } }catch(e){} };
+        document.addEventListener('DOMContentLoaded', ()=>{ if(window.authService && authService.handleLoginCallback) authService.handleLoginCallback(); if(window.updateAuthUI) updateAuthUI(); });
+
+        (function(){
+            const settingsToggle = document.getElementById('settingsToggle');
+            const settingsMenu = document.getElementById('settingsMenu');
+            const headerFixedCB = document.getElementById('headerFixed');
+            const lightModeCB = document.getElementById('lightMode');
+            const resetBtn = document.getElementById('resetSettings');
+            const headerEl = document.getElementById('header');
+            if(!settingsToggle || !settingsMenu) return;
+            function applyHeaderFixed(enabled){ if(!headerEl) return; headerEl.className = enabled ? 'header-fixed' : 'header'; if(enabled) document.body.style.paddingTop = headerEl.offsetHeight + 'px'; else document.body.style.paddingTop = ''; }
+            function applyLightMode(enabled){ document.documentElement.classList.toggle('light-mode', enabled); }
+            function save(){ if(!headerFixedCB || !lightModeCB) return; localStorage.setItem('igdb_headerFixed', headerFixedCB.getAttribute('aria-pressed')==='true' ? '1':'0'); localStorage.setItem('igdb_lightMode', lightModeCB.getAttribute('aria-pressed')==='true' ? '1':'0'); }
+            function load(){ if(!headerFixedCB || !lightModeCB) return; const hf=localStorage.getItem('igdb_headerFixed')==='1'; const lm=localStorage.getItem('igdb_lightMode')==='1'; headerFixedCB.setAttribute('aria-pressed', hf ? 'true':'false'); lightModeCB.setAttribute('aria-pressed', lm ? 'true':'false'); applyHeaderFixed(hf); applyLightMode(lm); }
+            settingsToggle.addEventListener('click', ()=>{ const isHidden = settingsMenu.hasAttribute('hidden'); if(isHidden){ settingsMenu.removeAttribute('hidden'); settingsToggle.setAttribute('aria-expanded','true'); } else { settingsMenu.setAttribute('hidden',''); settingsToggle.setAttribute('aria-expanded','false'); } });
+            document.addEventListener('click',(e)=>{ if(!settingsMenu.contains(e.target) && e.target !== settingsToggle){ settingsMenu.setAttribute('hidden',''); settingsToggle.setAttribute('aria-expanded','false'); } });
+            if(headerFixedCB) headerFixedCB.addEventListener('click', ()=>{ const isPressed = headerFixedCB.getAttribute('aria-pressed')==='true'; headerFixedCB.setAttribute('aria-pressed', !isPressed); applyHeaderFixed(!isPressed); save(); });
+            if(lightModeCB) lightModeCB.addEventListener('click', ()=>{ const isPressed = lightModeCB.getAttribute('aria-pressed')==='true'; lightModeCB.setAttribute('aria-pressed', !isPressed); applyLightMode(!isPressed); save(); });
+            if(resetBtn) resetBtn.addEventListener('click', ()=>{ localStorage.removeItem('igdb_headerFixed'); localStorage.removeItem('igdb_lightMode'); if(headerFixedCB) headerFixedCB.setAttribute('aria-pressed','false'); if(lightModeCB) lightModeCB.setAttribute('aria-pressed','false'); applyHeaderFixed(false); applyLightMode(false); });
+            window.addEventListener('resize', ()=>{ if(headerEl && headerEl.classList.contains('header-fixed')) document.body.style.paddingTop = headerEl.offsetHeight + 'px'; });
+            if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', load); else load();
+        })();
+
+        (function(){
+            const menuToggle = document.getElementById('menuToggle');
+            const navMenu = document.getElementById('navMenu');
+            if(!menuToggle || !navMenu) return;
+            menuToggle.addEventListener('click', (e)=>{ e.stopPropagation(); const isOpen = navMenu.classList.toggle('open'); menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false'); });
+            document.addEventListener('click',(e)=>{ if(!navMenu.contains(e.target) && e.target !== menuToggle){ if(navMenu.classList.contains('open')){ navMenu.classList.remove('open'); menuToggle.setAttribute('aria-expanded','false'); } } });
+        })();
+    }
+    </script>
+
 </body>
 </html>

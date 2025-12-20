@@ -11,6 +11,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: color 0.3s ease, background-color 0.3s ease;
     
 }
 
@@ -21,7 +22,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    
+    transition: color 0.3s ease, background-color 0.3s ease;
 }
 
 .header {
@@ -40,6 +41,10 @@ body {
     align-items: center;
     position: fixed;
     z-index: 1000;
+    transition: all 0.4s ease-in-out;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 10px;
 }
 
 .header-fixed {
@@ -54,16 +59,22 @@ body {
     align-items: center;
     position: fixed;
     z-index: 1000;
+    transition: all 0.4s ease-in-out;
+    top: 0;
+    left: 0;
 }
 
 .header-fixed>.search-bar input {
     padding: 10px 15px;
-    width: 1000px;
+    width: 100%;
     border-radius: 3px;
     font-size: 16px;
     background-color: #ffffff;
     border: #ffffff;
     opacity: 0.9;
+    transition: all 0.4s ease-in-out;
+    flex: 1;
+    margin: 0 15px;
 }
 
 .header-fixed>.nav-buttons button {
@@ -73,6 +84,7 @@ body {
     border-radius: 3px;
     cursor: pointer;
     font-weight: 700;
+    transition: all 0.4s ease-in-out;
 }
 
 .header-fixed>.nav-buttons>a {
@@ -84,6 +96,7 @@ body {
     font-weight: 700;
     text-decoration: none;
     color: #000;
+    transition: all 0.4s ease-in-out;
 }
 
 .header-fixed>.nav-buttons>span>a{
@@ -95,18 +108,23 @@ body {
     font-weight: 700;
     text-decoration: none;
     color: #000;
+    transition: all 0.4s ease-in-out;
 }
 
 .menu-button{
     padding: 8px 15px ;
-    margin-right: 10px;
+    margin-right: 20px;
     background-color: #f5c518;
     border-radius: 50%;
     cursor: pointer;
     font-weight: 700;
     color:#000;
+    transition: all 0.4s ease-in-out;
 }
 
+.menu-toggle {
+    display: none;
+}
 
 .logo-placeholder {
     height: 50px;
@@ -123,6 +141,14 @@ body {
     align-items: center;
 }
 
+.search-bar {
+    display: flex;
+    flex: 1 1 auto;
+    margin: 0 10px;
+    transition: all 0.4s ease-in-out;
+    min-width: 0;
+}
+
 .search-bar input {
     padding: 10px 15px;
     width: 650px;
@@ -131,6 +157,7 @@ body {
     background-color: #ffffff;
     border: #ffffff;
     opacity: 0.9;
+    transition: all 0.4s ease-in-out;
 }
 
 .nav-buttons button {
@@ -138,8 +165,9 @@ body {
     margin-right: 10px;
     background-color: #f5c518;
     border-radius: 30px;
-    cursor: pointer;
+    cursor: pointer;    
     font-weight: 700;
+    transition: all 0.4s ease-in-out;
 }
 
 .nav-buttons>a {
@@ -152,6 +180,7 @@ body {
     text-decoration: none;
     color: #000;
     border: #000 1px solid;
+    transition: all 0.4s ease-in-out;
 }
 
 .nav-buttons>span>a{
@@ -164,6 +193,7 @@ body {
     text-decoration: none;
     color: #000;
     border: #000 1px solid;
+    transition: all 0.4s ease-in-out;
 }
 
 .container {
@@ -199,7 +229,6 @@ body {
     margin: 30px 0 15px;
     text-transform: uppercase;
     border-radius: 30px;
-
 }
 
 .news-grid {
@@ -236,7 +265,6 @@ body {
     line-height: 1.4;
 }
 
-/* News image styling */
 .main-article img {
     display: block;
     width: 100%;
@@ -348,18 +376,6 @@ body {
     font-weight: 700;
 }
 
-.acks {
-    height: 100%;
-    width: fit-content;
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    justify-content: flex-start;
-    color: #cccccc;
-    font-size: 14px;
-    margin-bottom: 1px;
-}
-
 .footer-buttons button {
     width: 200px;
     padding: 12px 20px;
@@ -448,7 +464,6 @@ body {
     margin-bottom: 10px;
 }
 
-/* Additional styles for new pages */
 .about-link {
     padding: 8px 15px;
     margin-right: 10px;
@@ -520,7 +535,7 @@ body {
 }
 
 .add-to-wishlist:hover {
-    background-color: #ffff00;
+    background-color: #f5c518;
     transform: scale(1.05);
 }
 
@@ -570,7 +585,6 @@ body {
     font-size: 16px;
 }
 
-/* Settings menu dropdown */
 .settings {
     position: relative;
     display: inline-block;
@@ -632,8 +646,8 @@ body {
     width: 40px;
     height: 24px;
     border: none;
-    border-radius: 12px;
-    background-color: #ffffff;
+    border-radius: 50%;
+    background-color: #000000;
     cursor: pointer;
     position: relative;
     transition: background-color 0.3s ease;
@@ -645,7 +659,7 @@ body {
     position: absolute;
     width: 20px;
     height: 20px;
-    background-color: #ffffff;
+    background-color: #000000;
     border-radius: 50%;
     top: 2px;
     left: 2px;
@@ -653,14 +667,14 @@ body {
 }
 
 .toggle-btn[aria-pressed="true"] {
-    background-color: #000;
+    background-color: #f5c518;
+
 }
 
 .toggle-btn[aria-pressed="true"]::after {
     left: 18px;
 }
 
-/* Light mode */
 .light-mode,
 .light-mode body {
     background: #fff;
@@ -686,4 +700,83 @@ body {
     --menu-bg: #fff;
     --menu-fg: #111;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+
+/* Responsive search bar */
+@media (max-width: 1200px) {
+    .search-bar input {
+        width: 500px;
+    }
+    .header-fixed>.search-bar input {
+        width: 500px;
+    }
+}
+
+@media (max-width: 1000px) {
+    .search-bar input {
+        width: 350px;
+    }
+    .header-fixed>.search-bar input {
+        width: 350px;
+    }
+}
+
+@media (max-width: 900px) {
+    .search-bar {
+        display: none;
+    }
+    .header {
+        gap: 8px;
+    }
+    .menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5c518;
+        border: none;
+        color: #000;
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 20px;
+        cursor: pointer;
+    }
+    .nav-buttons {
+        display: none;
+    }
+    .nav-buttons.open {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 5%;
+        width: 85%;
+        background: rgba(18,18,18,0.95);
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+        z-index: 999;
+        gap: 8px;
+    }
+    .nav-buttons.open a,
+    .nav-buttons.open button,
+    .nav-buttons.open span {
+        margin: 6px 0;
+    }
+    .nav-buttons.open .settings {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 6px;
+    }
+    .menu-toggle {
+        padding: 6px 10px;
+        font-size: 18px;
+    }
+    .nav-buttons.open {
+        right: 2%;
+        width: 92%;
+    }
 }
