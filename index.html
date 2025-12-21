@@ -9,6 +9,38 @@
     <script src="js/rawg-api.js"></script>
     <script src="js/auth-service.js"></script>
     <script src="js/news-api.js"></script>
+    <style>
+        /* Small inline style to ensure the user info looks good in the nav */
+        #userButtons {
+            display: none; /* Hidden by default */
+            align-items: center;
+            gap: 15px;
+        }
+        .user-greeting {
+            color: #ffffff;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        .user-greeting span {
+            color: #f5c518; /* Yellow highlight for the name */
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        
+        /* Mobile adjustment */
+        @media (max-width: 768px) {
+            #userButtons {
+                flex-direction: column;
+                gap: 10px;
+                margin-top: 10px;
+            }
+            .user-greeting {
+                margin-right: 0;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -25,14 +57,17 @@
 
         <nav id="navMenu" class="nav-buttons">
             <a href="wishlist.html" class="wishlist">Wishlist</a>
+            
             <span id="authButtons">
                 <a href="signin.html" class="sign-in">Sign In</a>
             </span>
-            <span id="userButtons" style="display: none;">
-                <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b;">Logout</button>
-            </span>
-            <a href="about_us.html" class="about-link">About Us</a>
 
+            <span id="userButtons">
+                <span id="userGreeting" class="user-greeting"></span>
+                <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b; border: none;">Logout</button>
+            </span>
+
+            <a href="about_us.html" class="about-link">About Us</a>
 
             <div class="settings">
                 <button id="settingsToggle" class="settings-btn" aria-expanded="false" aria-controls="settingsMenu">☰</button>
@@ -90,6 +125,58 @@
 
     <script>
         const API_KEY = '266fadd8dc914070b892d47f91163eeb';
+
+        // --- AUTHENTICATION LOGIC START ---
+        
+        // 1. Check for logged in user and update UI
+        function updateAuthUI() {
+            // Retrieve data set by the Login page
+            const userEmail = localStorage.getItem('currentUser');
+            // Try to get Full Name, fallback to Username, fallback to 'Gamer'
+            const userName = localStorage.getItem('currentUserName') || localStorage.getItem('currentUsername') || 'Gamer';
+
+            const authBtn = document.getElementById('authButtons');
+            const userBtn = document.getElementById('userButtons');
+            const greeting = document.getElementById('userGreeting');
+
+            if (userEmail) {
+                // User IS logged in
+                if(authBtn) authBtn.style.display = 'none';
+                
+                if(userBtn) {
+                    // Use flex to align text and button
+                    userBtn.style.display = 'inline-flex'; 
+                }
+                
+                if(greeting) {
+                    greeting.innerHTML = `Welcome, <span>${userName}</span>`;
+                }
+            } else {
+                // User is NOT logged in
+                if(authBtn) authBtn.style.display = 'inline';
+                if(userBtn) userBtn.style.display = 'none';
+                if(greeting) greeting.innerHTML = '';
+            }
+        }
+
+        // 2. Handle Logout
+        function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear the LocalStorage items set during login
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentUserName');
+                localStorage.removeItem('currentUsername');
+                localStorage.removeItem('currentUserId');
+                
+                // Update UI immediately
+                updateAuthUI();
+                
+                // Optional: Reload page to clear any cached states
+                window.location.reload();
+            }
+        }
+        // --- AUTHENTICATION LOGIC END ---
+
         async function loadTrendingGames() {
             const data = await fetchTrendingGames();
             if (data && data.results) {
@@ -104,7 +191,6 @@
             }
         }
 
-        // Fallback image setter: uses local SVG placeholders when external image fails to load
         function setFallbackImg(img, type = 'side') {
             try {
                 img.onerror = null;
@@ -119,7 +205,6 @@
         async function loadNews() {
             const newsData = await getNewsForDisplay();
             const newsGrid = document.getElementById('newsGrid');
-                        console.log('loadNews called, newsData:', newsData);
             
             if (!newsData.mainArticle && newsData.sideArticles.length === 0) {
                 newsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 20px; color: #999;">Unable to load news at this time</div>';
@@ -128,7 +213,6 @@
 
             newsGrid.innerHTML = '';
 
-            // Main article
             if (newsData.mainArticle) {
                 const mainArticle = newsData.mainArticle;
                 const mainDiv = document.createElement('div');
@@ -150,7 +234,6 @@
                 newsGrid.appendChild(mainDiv);
             }
 
-            // Side articles
             if (newsData.sideArticles.length > 0) {
                 const sideArticlesDiv = document.createElement('div');
                 sideArticlesDiv.className = 'side-articles';
@@ -214,31 +297,13 @@
             }
         }
 
-        async function handleLogout() {
-            if (confirm('Are you sure you want to logout?')) {
-                await authService.logout();
-            }
-        }
-
-        async function updateAuthUI() {
-            const user = await authService.getCurrentUser();
-            if (user) {
-                document.getElementById('authButtons').style.display = 'none';
-                document.getElementById('userButtons').style.display = 'inline-block';
-            }
-        }
-
         // Load games on page load
         document.addEventListener('DOMContentLoaded', () => {
-            // Check login callback
-            authService.handleLoginCallback();
-            
-            // Update auth UI
+            // Check auth status immediately
             updateAuthUI();
 
             if (!API_KEY || API_KEY === 'YOUR_RAWG_API_KEY') {
                 console.warn('Please set your RAWG API key in index.html');
-                // Still try to load for demo purposes
             }
             loadNews();
             loadTrendingGames();
@@ -332,7 +397,6 @@
                 menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
             });
             
-            // Close menu when clicking outside
             document.addEventListener('click', (e)=>{
                 if(!navMenu.contains(e.target) && e.target !== menuToggle){
                     if(navMenu.classList.contains('open')){

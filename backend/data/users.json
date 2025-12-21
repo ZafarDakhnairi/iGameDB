@@ -1,0 +1,26 @@
+[
+  {
+    "id": 1766322766317,
+    "username": "darker89",
+    "email": "zaid@example.com",
+    "password": "Pass1234",
+    "gender": "Male",
+    "platforms": [
+      "Xbox"
+    ],
+    "terms": true,
+    "createdAt": "2025-12-21T13:12:46.317Z"
+  },
+  {
+    "id": 1766326268150,
+    "username": "darker980",
+    "email": "zaid@nothing.com",
+    "password": "Pass1234",
+    "gender": "Male",
+    "platforms": [
+      "PC"
+    ],
+    "terms": true,
+    "createdAt": "2025-12-21T14:11:08.150Z"
+  }
+]
