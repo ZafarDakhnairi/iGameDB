@@ -176,34 +176,79 @@
             `;
 
             document.getElementById('gameSection').innerHTML = html;
+
+            // Update wishlist button based on current status
+            updateWishlistButton(game.id);
         }
 
-        function toggleWishlist(gameId) {
+        async function toggleWishlist(gameId) {
             const btn = event.target;
-            if (btn.textContent === 'Add to Wishlist') {
-                btn.textContent = 'Remove from Wishlist';
-                btn.style.backgroundColor = '#ff6b6b';
-                // Store in localStorage for persistence
-                let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-                if (!wishlist.includes(gameId)) {
-                    wishlist.push(gameId);
-                    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) {
+                alert('Please log in to add games to your wishlist.');
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            try {
+                if (btn.textContent === 'Add to Wishlist') {
+                    const response = await fetch('http://localhost:3000/wishlist', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ gameId, userId })
+                    });
+                    if (response.ok) {
+                        btn.textContent = 'Remove from Wishlist';
+                        btn.style.backgroundColor = '#ff6b6b';
+                    } else {
+                        alert('Error adding to wishlist');
+                    }
+                } else {
+                    const response = await fetch('http://localhost:3000/wishlist/remove', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ gameId, userId })
+                    });
+                    if (response.ok) {
+                        btn.textContent = 'Add to Wishlist';
+                        btn.style.backgroundColor = '#f5c518';
+                    } else {
+                        alert('Error removing from wishlist');
+                    }
                 }
-            } else {
-                btn.textContent = 'Add to Wishlist';
-                btn.style.backgroundColor = '#f5c518';
-                // Remove from localStorage
-                let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-                wishlist = wishlist.filter(id => id !== gameId);
-                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Network error');
             }
         }
 
-        function handleSearch(event) {
-            event.preventDefault();
-            const query = document.getElementById('searchInput').value;
-            if (query.trim()) {
-                window.location.href = `searched_for.html?q=${encodeURIComponent(query)}`;
+        async function updateWishlistButton(gameId) {
+            const btn = document.querySelector('.add-to-wishlist');
+            if (!btn) return;
+
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) {
+                // Not logged in, keep as Add
+                btn.textContent = 'Add to Wishlist';
+                btn.style.backgroundColor = '#f5c518';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/wishlist/${userId}`);
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    const wishlist = data.data;
+                    if (wishlist.includes(gameId)) {
+                        btn.textContent = 'Remove from Wishlist';
+                        btn.style.backgroundColor = '#ff6b6b';
+                    } else {
+                        btn.textContent = 'Add to Wishlist';
+                        btn.style.backgroundColor = '#f5c518';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking wishlist:', error);
             }
         }
 

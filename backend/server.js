@@ -50,7 +50,7 @@ function readWishlist() {
         const data = fs.readFileSync(wishlistFile, 'utf-8');
         return JSON.parse(data);
     } catch (error) {
-        return [];
+        return {};
     }
 }
 
@@ -219,40 +219,41 @@ app.post('/login', (req, res) => {
 // ===== WISHLIST ROUTE =====
 app.post('/wishlist', (req, res) => {
     try {
-        const { gameTitle, platform, genre, reason, userId } = req.body;
+        const { gameId, userId } = req.body;
 
         // Validation
-        if (!gameTitle || !platform || !genre || !reason || !userId) {
+        if (!gameId || !userId) {
             return res.status(400).json({
                 success: false,
-                message: 'All fields are required'
+                message: 'gameId and userId are required'
             });
         }
 
         // Read wishlist
         const wishlist = readWishlist();
 
-        // Create new wishlist entry
-        const newEntry = {
-            id: Date.now(),
-            userId,
-            gameTitle,
-            platform,
-            genre: Array.isArray(genre) ? genre : [genre],
-            reason,
-            dateAdded: new Date().toISOString()
-        };
+        // Ensure userId key exists
+        if (!wishlist[userId]) {
+            wishlist[userId] = [];
+        }
+
+        // Check if already in wishlist
+        if (wishlist[userId].includes(gameId)) {
+            return res.status(409).json({
+                success: false,
+                message: 'Game already in wishlist'
+            });
+        }
 
         // Add to wishlist
-        wishlist.push(newEntry);
+        wishlist[userId].push(gameId);
 
         // Write back to file
         writeWishlist(wishlist);
 
         return res.status(201).json({
             success: true,
-            message: 'Game added to wishlist successfully',
-            entry: newEntry
+            message: 'Game added to wishlist successfully'
         });
     } catch (error) {
         console.error('Wishlist error:', error);
@@ -268,13 +269,64 @@ app.get('/wishlist/:userId', (req, res) => {
     try {
         const { userId } = req.params;
         const wishlist = readWishlist();
-        const userWishlist = wishlist.filter(item => item.userId === parseInt(userId));
+        const userWishlist = wishlist[userId] || [];
         return res.status(200).json({
             success: true,
             data: userWishlist
         });
     } catch (error) {
         console.error('Get wishlist error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+});
+
+// ===== REMOVE FROM WISHLIST ROUTE =====
+app.post('/wishlist/remove', (req, res) => {
+    try {
+        const { gameId, userId } = req.body;
+
+        // Validation
+        if (!gameId || !userId) {
+            return res.status(400).json({
+                success: false,
+                message: 'gameId and userId are required'
+            });
+        }
+
+        // Read wishlist
+        const wishlist = readWishlist();
+
+        // Ensure userId key exists
+        if (!wishlist[userId]) {
+            return res.status(404).json({
+                success: false,
+                message: 'Wishlist not found'
+            });
+        }
+
+        // Remove from wishlist
+        const index = wishlist[userId].indexOf(gameId);
+        if (index === -1) {
+            return res.status(404).json({
+                success: false,
+                message: 'Game not in wishlist'
+            });
+        }
+
+        wishlist[userId].splice(index, 1);
+
+        // Write back to file
+        writeWishlist(wishlist);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Game removed from wishlist successfully'
+        });
+    } catch (error) {
+        console.error('Remove wishlist error:', error);
         return res.status(500).json({
             success: false,
             message: 'Internal server error'
@@ -341,7 +393,8 @@ app.listen(PORT, () => {
     - POST /signup     - Create new account
     - POST /login      - Login user
     - POST /wishlist   - Add game to wishlist
-    - GET /wishlist/:userId - Get wishlist entries
+    - GET /wishlist/:userId - Get user's wishlist (array of gameIds)
+    - POST /wishlist/remove - Remove game from wishlist
     ====================================
     `);
   console.log(`📦 MongoDB URL: ${mongoUrl}`);

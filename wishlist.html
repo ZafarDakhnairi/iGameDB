@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="style.css">
     <script src="js/rawg-api.js"></script>
+    <script src="js/auth-service.js"></script>
 </head>
 <body>
     <div id="header" class="header">
@@ -103,10 +104,10 @@
         const API_KEY = '266fadd8dc914070b892d47f91163eeb';
         async function loadWishlist() {
             const container = document.getElementById('wishlistGrid');
-            const userEmail = localStorage.getItem('currentUser');
+            const userId = localStorage.getItem('currentUserId');
 
             // 1. Check if logged in
-            if (!userEmail) {
+            if (!userId) {
                 container.innerHTML = `
                     <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; background: #1a1a1a; border-radius: 15px;">
                         <h3 style="color: #f5c518; margin-bottom: 15px;">Access Denied</h3>
@@ -116,21 +117,28 @@
                 return;
             }
 
-            const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+            try {
+                const response = await fetch(`http://localhost:3000/wishlist/${userId}`);
+                const data = await response.json();
+                const wishlist = data.success ? data.data : [];
 
-            if (wishlist.length === 0) {
-                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px;">Your wishlist is empty. <a href="index.html" style="color: #f5c518;">Start adding games!</a></p>';
-                return;
-            }
-
-            container.innerHTML = '';
-
-            // Fetch details for each game in wishlist
-            for (const gameId of wishlist) {
-                const game = await fetchGameDetails(gameId);
-                if (game) {
-                    displayWishlistGame(game, container);
+                if (wishlist.length === 0) {
+                    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px;">Your wishlist is empty. <a href="index.html" style="color: #f5c518;">Start adding games!</a></p>';
+                    return;
                 }
+
+                container.innerHTML = '';
+
+                // Fetch details for each game in wishlist
+                for (const gameId of wishlist) {
+                    const game = await fetchGameDetails(gameId);
+                    if (game) {
+                        displayWishlistGame(game, container);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading wishlist:', error);
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff6b6b;">Error loading wishlist. Please try again.</p>';
             }
         }
 
@@ -182,12 +190,26 @@
             container.appendChild(gameCard);
         }
 
-        function removeFromWishlist(gameId, event) {
+        async function removeFromWishlist(gameId, event) {
             event.stopPropagation();
-            let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-            wishlist = wishlist.filter(id => id !== gameId);
-            localStorage.setItem('wishlist', JSON.stringify(wishlist));
-            loadWishlist(); // Reload wishlist
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) return;
+
+            try {
+                const response = await fetch('http://localhost:3000/wishlist/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameId, userId })
+                });
+                if (response.ok) {
+                    loadWishlist(); // Reload wishlist
+                } else {
+                    alert('Error removing game from wishlist');
+                }
+            } catch (error) {
+                console.error('Error removing:', error);
+                alert('Error removing game from wishlist');
+            }
         }
 
         function handleSearch(event) {
