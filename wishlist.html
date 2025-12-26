@@ -7,9 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="style.css">
     <script src="js/rawg-api.js"></script>
+    <script src="js/auth-service.js"></script>
 </head>
 <body>
-
     <div id="header" class="header">
         <a href="index.html">        
             <img src="images/iGameDB.png" alt="iGameDB Logo">
@@ -22,15 +22,15 @@
         <button id="menuToggle" class="menu-toggle" aria-expanded="false" aria-controls="navMenu">☰</button>
 
         <nav id="navMenu" class="nav-buttons">
-            <a href="wishlist.html" class="wishlist">Wishlist</a>
+            <a href="wishlist.html" class="wishlist active">Wishlist</a>
             <span id="authButtons">
                 <a href="signin.html" class="sign-in">Sign In</a>
             </span>
             <span id="userButtons" style="display: none;">
-                <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b;">Logout</button>
+                <span id="userGreeting" class="user-greeting" style="color: white; font-size: 14px; margin-right: 10px;"></span>
+                <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b; border: none;">Logout</button>
             </span>
             <a href="about_us.html" class="about-link">About Us</a>
-
 
             <div class="settings">
                 <button id="settingsToggle" class="settings-btn" aria-expanded="false" aria-controls="settingsMenu">☰</button>
@@ -42,7 +42,7 @@
             </div>
         </nav>
     </div>
-
+    
     <div class="container">
         <section class="wishlist-section">
             <h2>MY WISHLIST</h2>
@@ -103,22 +103,70 @@
 
         const API_KEY = '266fadd8dc914070b892d47f91163eeb';
         async function loadWishlist() {
-            const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
             const container = document.getElementById('wishlistGrid');
+            const userId = localStorage.getItem('currentUserId');
 
-            if (wishlist.length === 0) {
-                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px;">Your wishlist is empty. <a href="index.html" style="color: #f5c518;">Start adding games!</a></p>';
+            // 1. Check if logged in
+            if (!userId) {
+                container.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; background: #1a1a1a; border-radius: 15px;">
+                        <h3 style="color: #f5c518; margin-bottom: 15px;">Access Denied</h3>
+                        <p style="color: #ccc; margin-bottom: 25px;">You must be logged in to view and manage your wishlist.</p>
+                        <a href="signin.html" class="sign-in" style="padding: 10px 25px; text-decoration: none;">Go to Login</a>
+                    </div>`;
                 return;
             }
 
-            container.innerHTML = '';
+            try {
+                const response = await fetch(`http://localhost:3000/wishlist/${userId}`);
+                const data = await response.json();
+                const wishlist = data.success ? data.data : [];
 
-            // Fetch details for each game in wishlist
-            for (const gameId of wishlist) {
-                const game = await fetchGameDetails(gameId);
-                if (game) {
-                    displayWishlistGame(game, container);
+                if (wishlist.length === 0) {
+                    container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px;">Your wishlist is empty. <a href="index.html" style="color: #f5c518;">Start adding games!</a></p>';
+                    return;
                 }
+
+                container.innerHTML = '';
+
+                // Fetch details for each game in wishlist
+                for (const gameId of wishlist) {
+                    const game = await fetchGameDetails(gameId);
+                    if (game) {
+                        displayWishlistGame(game, container);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading wishlist:', error);
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #ff6b6b;">Error loading wishlist. Please try again.</p>';
+            }
+        }
+
+        // Updated updateAuthUI to show greeting
+        function updateAuthUI() {
+            const userEmail = localStorage.getItem('currentUser');
+            const userName = localStorage.getItem('currentUserName') || 'Gamer';
+
+            const authBtn = document.getElementById('authButtons');
+            const userBtn = document.getElementById('userButtons');
+            const greeting = document.getElementById('userGreeting');
+
+            if (userEmail) {
+                if(authBtn) authBtn.style.display = 'none';
+                if(userBtn) userBtn.style.display = 'inline-flex'; 
+                if(greeting) greeting.innerHTML = `Welcome, <span style="color: #f5c518; font-weight: bold;">${userName}</span>`;
+            } else {
+                if(authBtn) authBtn.style.display = 'inline';
+                if(userBtn) userBtn.style.display = 'none';
+            }
+        }
+
+        async function handleLogout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('currentUser');
+                localStorage.removeItem('currentUserName');
+                // Optional: Keep or clear wishlist on logout? Usually keep in localStorage.
+                window.location.reload(); 
             }
         }
 
@@ -142,12 +190,26 @@
             container.appendChild(gameCard);
         }
 
-        function removeFromWishlist(gameId, event) {
+        async function removeFromWishlist(gameId, event) {
             event.stopPropagation();
-            let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-            wishlist = wishlist.filter(id => id !== gameId);
-            localStorage.setItem('wishlist', JSON.stringify(wishlist));
-            loadWishlist(); // Reload wishlist
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) return;
+
+            try {
+                const response = await fetch('http://localhost:3000/wishlist/remove', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ gameId, userId })
+                });
+                if (response.ok) {
+                    loadWishlist(); // Reload wishlist
+                } else {
+                    alert('Error removing game from wishlist');
+                }
+            } catch (error) {
+                console.error('Error removing:', error);
+                alert('Error removing game from wishlist');
+            }
         }
 
         function handleSearch(event) {

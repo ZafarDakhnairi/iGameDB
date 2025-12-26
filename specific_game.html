@@ -63,10 +63,10 @@
                 <a href="signin.html" class="sign-in">Sign In</a>
             </span>
             <span id="userButtons" style="display: none;">
-                <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b;">Logout</button>
+                <span id="userGreeting" class="user-greeting" style="color: white; font-size: 14px; margin-right: 10px;"></span>
+                <button onclick="handleLogout()" class="sign-in" style="background-color: #ff6b6b; border: none;">Logout</button>
             </span>
             <a href="about_us.html" class="about-link">About Us</a>
-
 
             <div class="settings">
                 <button id="settingsToggle" class="settings-btn" aria-expanded="false" aria-controls="settingsMenu">☰</button>
@@ -176,34 +176,79 @@
             `;
 
             document.getElementById('gameSection').innerHTML = html;
+
+            // Update wishlist button based on current status
+            updateWishlistButton(game.id);
         }
 
-        function toggleWishlist(gameId) {
+        async function toggleWishlist(gameId) {
             const btn = event.target;
-            if (btn.textContent === 'Add to Wishlist') {
-                btn.textContent = 'Remove from Wishlist';
-                btn.style.backgroundColor = '#ff6b6b';
-                // Store in localStorage for persistence
-                let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-                if (!wishlist.includes(gameId)) {
-                    wishlist.push(gameId);
-                    localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) {
+                alert('Please log in to add games to your wishlist.');
+                window.location.href = 'signin.html';
+                return;
+            }
+
+            try {
+                if (btn.textContent === 'Add to Wishlist') {
+                    const response = await fetch('http://localhost:3000/wishlist', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ gameId, userId })
+                    });
+                    if (response.ok) {
+                        btn.textContent = 'Remove from Wishlist';
+                        btn.style.backgroundColor = '#ff6b6b';
+                    } else {
+                        alert('Error adding to wishlist');
+                    }
+                } else {
+                    const response = await fetch('http://localhost:3000/wishlist/remove', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ gameId, userId })
+                    });
+                    if (response.ok) {
+                        btn.textContent = 'Add to Wishlist';
+                        btn.style.backgroundColor = '#f5c518';
+                    } else {
+                        alert('Error removing from wishlist');
+                    }
                 }
-            } else {
-                btn.textContent = 'Add to Wishlist';
-                btn.style.backgroundColor = '#f5c518';
-                // Remove from localStorage
-                let wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-                wishlist = wishlist.filter(id => id !== gameId);
-                localStorage.setItem('wishlist', JSON.stringify(wishlist));
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Network error');
             }
         }
 
-        function handleSearch(event) {
-            event.preventDefault();
-            const query = document.getElementById('searchInput').value;
-            if (query.trim()) {
-                window.location.href = `searched_for.html?q=${encodeURIComponent(query)}`;
+        async function updateWishlistButton(gameId) {
+            const btn = document.querySelector('.add-to-wishlist');
+            if (!btn) return;
+
+            const userId = localStorage.getItem('currentUserId');
+            if (!userId) {
+                // Not logged in, keep as Add
+                btn.textContent = 'Add to Wishlist';
+                btn.style.backgroundColor = '#f5c518';
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/wishlist/${userId}`);
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    const wishlist = data.data;
+                    if (wishlist.includes(gameId)) {
+                        btn.textContent = 'Remove from Wishlist';
+                        btn.style.backgroundColor = '#ff6b6b';
+                    } else {
+                        btn.textContent = 'Add to Wishlist';
+                        btn.style.backgroundColor = '#f5c518';
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking wishlist:', error);
             }
         }
 
@@ -246,6 +291,34 @@
             menuToggle.addEventListener('click', (e)=>{ e.stopPropagation(); const isOpen = navMenu.classList.toggle('open'); menuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false'); });
             document.addEventListener('click',(e)=>{ if(!navMenu.contains(e.target) && e.target !== menuToggle){ if(navMenu.classList.contains('open')){ navMenu.classList.remove('open'); menuToggle.setAttribute('aria-expanded','false'); } } });
         })();
+    }
+    async function updateAuthUI() {
+        const userEmail = localStorage.getItem('currentUser');
+        const userName = localStorage.getItem('currentUserName') || localStorage.getItem('currentUsername') || 'Gamer';
+
+        const authBtn = document.getElementById('authButtons');
+        const userBtn = document.getElementById('userButtons');
+        const greeting = document.getElementById('userGreeting');
+
+        if (userEmail) {
+            if(authBtn) authBtn.style.display = 'none';
+            if(userBtn) userBtn.style.display = 'inline-flex'; 
+            if(greeting) greeting.innerHTML = `Welcome, <span style="color: #f5c518; font-weight: bold;">${userName}</span>`;
+        } else {
+            if(authBtn) authBtn.style.display = 'inline';
+            if(userBtn) userBtn.style.display = 'none';
+        }
+    }
+
+    async function handleLogout() {
+        if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('currentUserName');
+            localStorage.removeItem('currentUsername');
+            localStorage.removeItem('currentUserId');
+            updateAuthUI();
+            window.location.reload();
+        }
     }
     </script>
 </body>
